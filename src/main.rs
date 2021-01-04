@@ -6,7 +6,10 @@ use bevy::{
         App, Assets, Camera2dBundle, CameraUiBundle, Color, ColorMaterial, Commands,
         DefaultPlugins, ResMut, SpriteBundle, Vec2, Vec3,
     },
-    sprite::Sprite,
+    sprite::{
+        collide_aabb::{collide, Collision},
+        Sprite,
+    },
 };
 
 mod direction;
@@ -14,9 +17,11 @@ use crate::direction::*;
 
 use std::iter::repeat_with;
 struct Ball {
-    direction: Direction,
+    direction: Vec3,
     speed: f32,
 }
+
+struct Collider;
 
 impl Ball {
     fn new() -> Self {
@@ -25,8 +30,15 @@ impl Ball {
             .expect("Somehow we generated a None starter Direction for the ball");
 
         Ball {
-            direction,
+            direction: direction.into(),
             speed: 300.0,
+        }
+    }
+
+    fn collide(&mut self, collision: Collision) {
+        match collision {
+            Collision::Left | Collision::Right => self.direction *= Vec3::new(-1.0, 1.0, 1.0),
+            Collision::Top | Collision::Bottom => self.direction *= Vec3::new(1.0, -1.0, 1.0),
         }
     }
 }
@@ -36,16 +48,35 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup.system())
         .add_system(ball_movement.system())
+        .add_system(ball_collision.system())
         .run();
 }
 
-fn ball_movement(time: Res<Time>, mut balls: Query<(&Ball, &mut Transform)>) {
-    for (ball, mut transform) in balls.iter_mut() {
-        let direction: Vec3 = ball.direction.into();
+fn ball_movement(time: Res<Time>, mut query: Query<(&Ball, &mut Transform)>) {
+    for (ball, mut transform) in query.iter_mut() {
+        let direction: Vec3 = ball.direction;
         let velocity: Vec3 = ball.speed * direction;
         let distance: Vec3 = velocity * time.delta_seconds();
 
         transform.translation += distance;
+    }
+}
+
+fn ball_collision(
+    mut ball_query: Query<(&mut Ball, &Transform, &Sprite)>,
+    colliders_query: Query<(&Collider, &Transform, &Sprite)>,
+) {
+    for (mut ball, ball_transform, ball_sprite) in ball_query.iter_mut() {
+        for (_collider, collider_transform, collider_sprite) in colliders_query.iter() {
+            if let Some(collision) = collide(
+                ball_transform.translation,
+                ball_sprite.size,
+                collider_transform.translation,
+                collider_sprite.size,
+            ) {
+                ball.collide(collision)
+            };
+        }
     }
 }
 
@@ -71,6 +102,7 @@ fn setup(commands: &mut Commands, mut materials: ResMut<Assets<ColorMaterial>>) 
             sprite: Sprite::new(Vec2::new(bounds.x + wall_thickness, wall_thickness)),
             ..Default::default()
         })
+        .with(Collider)
         //bottom
         .spawn(SpriteBundle {
             material: wall_material,
@@ -78,6 +110,7 @@ fn setup(commands: &mut Commands, mut materials: ResMut<Assets<ColorMaterial>>) 
             sprite: Sprite::new(Vec2::new(bounds.x + wall_thickness, wall_thickness)),
             ..Default::default()
         })
+        .with(Collider)
         // Paddles
         // Player 1
         .spawn(SpriteBundle {
@@ -86,6 +119,7 @@ fn setup(commands: &mut Commands, mut materials: ResMut<Assets<ColorMaterial>>) 
             sprite: Sprite::new(Vec2::new(paddle_width, paddle_height)),
             ..Default::default()
         })
+        .with(Collider)
         //Player 2
         .spawn(SpriteBundle {
             material: materials.add(Color::rgb(0.8, 0.2, 0.2).into()),
@@ -97,6 +131,7 @@ fn setup(commands: &mut Commands, mut materials: ResMut<Assets<ColorMaterial>>) 
             sprite: Sprite::new(Vec2::new(paddle_width, paddle_height)),
             ..Default::default()
         })
+        .with(Collider)
         //Ball
         .spawn(SpriteBundle {
             material: materials.add(Color::rgb(0.2, 0.2, 0.2).into()),
