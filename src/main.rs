@@ -1,10 +1,11 @@
 use bevy::{
     core::Time,
     ecs::{IntoSystem, Query, Res},
+    input::Input,
     prelude::Transform,
     prelude::{
         App, Assets, Camera2dBundle, CameraUiBundle, Color, ColorMaterial, Commands,
-        DefaultPlugins, ResMut, SpriteBundle, Vec2, Vec3,
+        DefaultPlugins, KeyCode, ResMut, SpriteBundle, Vec2, Vec3,
     },
     sprite::{
         collide_aabb::{collide, Collision},
@@ -22,6 +23,22 @@ struct Ball {
 }
 
 struct Collider;
+
+#[derive(Debug, PartialEq)]
+enum PlayerCode {
+    One,
+    Two,
+}
+struct Player {
+    code: PlayerCode,
+    move_up: KeyCode,
+    move_down: KeyCode,
+}
+
+struct Paddle {
+    player: Player,
+    speed: f32,
+}
 
 impl Ball {
     fn new() -> Self {
@@ -49,7 +66,27 @@ fn main() {
         .add_startup_system(setup.system())
         .add_system(ball_movement.system())
         .add_system(ball_collision.system())
+        .add_system(input.system())
         .run();
+}
+
+fn input(input: Res<Input<KeyCode>>, time: Res<Time>, mut query: Query<(&Paddle, &mut Transform)>) {
+    for (paddle, mut transform) in query.iter_mut() {
+        if input.pressed(paddle.player.move_up) {
+            let direction: Vec3 = Direction::Up.into();
+            let velocity: Vec3 = paddle.speed * direction;
+            let distance: Vec3 = velocity * time.delta_seconds();
+
+            transform.translation += distance;
+        }
+        if input.pressed(paddle.player.move_down) {
+            let direction: Vec3 = Direction::Down.into();
+            let velocity: Vec3 = paddle.speed * direction;
+            let distance: Vec3 = velocity * time.delta_seconds();
+
+            transform.translation += distance;
+        }
+    }
 }
 
 fn ball_movement(time: Res<Time>, mut query: Query<(&Ball, &mut Transform)>) {
@@ -120,6 +157,14 @@ fn setup(commands: &mut Commands, mut materials: ResMut<Assets<ColorMaterial>>) 
             ..Default::default()
         })
         .with(Collider)
+        .with(Paddle {
+            player: Player {
+                code: PlayerCode::One,
+                move_up: KeyCode::W,
+                move_down: KeyCode::S,
+            },
+            speed: 300.0,
+        })
         //Player 2
         .spawn(SpriteBundle {
             material: materials.add(Color::rgb(0.8, 0.2, 0.2).into()),
@@ -132,6 +177,14 @@ fn setup(commands: &mut Commands, mut materials: ResMut<Assets<ColorMaterial>>) 
             ..Default::default()
         })
         .with(Collider)
+        .with(Paddle {
+            player: Player {
+                code: PlayerCode::Two,
+                move_up: KeyCode::Up,
+                move_down: KeyCode::Down,
+            },
+            speed: 300.0,
+        })
         //Ball
         .spawn(SpriteBundle {
             material: materials.add(Color::rgb(0.2, 0.2, 0.2).into()),
