@@ -15,6 +15,10 @@ fn setup(commands: &mut Commands, mut materials: ResMut<Assets<ColorMaterial>>) 
     let paddle_width = 20.0;
     let paddle_height = 100.0;
 
+    let ball_width = 20.0;
+    let ball_height = 20.0;
+
+
     commands
         .spawn(Camera2dBundle::default())
         .spawn(CameraUiBundle::default())
@@ -50,6 +54,17 @@ fn setup(commands: &mut Commands, mut materials: ResMut<Assets<ColorMaterial>>) 
                 0.0,
             )),
             sprite: Sprite::new(Vec2::new(paddle_width, paddle_height)),
+            ..Default::default()
+        })
+        //Ball
+        .spawn(SpriteBundle {
+            material: materials.add(Color::rgb(0.2, 0.2, 0.2).into()),
+            transform: Transform::from_translation(Vec3::new(
+                0.0,
+                0.0,
+                0.0,
+            )),
+            sprite: Sprite::new(Vec2::new(ball_width, ball_height)),
             ..Default::default()
         });
 }
