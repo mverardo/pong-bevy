@@ -1,3 +1,5 @@
+use crate::collider::*;
+use crate::direction::*;
 use bevy::{
     core::Time,
     ecs::{Query, Res},
@@ -9,8 +11,6 @@ use bevy::{
     },
 };
 use std::iter::repeat_with;
-use crate::direction::*;
-use crate::collider::*;
 
 pub struct Ball {
     direction: Vec3,
@@ -24,15 +24,33 @@ impl Ball {
             .expect("Somehow we generated a None starter Direction for the ball");
 
         Ball {
-            direction: direction.into(),
+            direction: Direction::Right.into(), //direction.into(),
             speed: 300.0,
         }
     }
 
     pub fn collide(&mut self, collision: Collision) {
         match collision {
-            Collision::Left | Collision::Right => self.direction *= Vec3::new(-1.0, 1.0, 1.0),
-            Collision::Top | Collision::Bottom => self.direction *= Vec3::new(1.0, -1.0, 1.0),
+            Collision::Left => {
+                if self.direction.x < 0.0 {
+                    self.direction *= Vec3::new(-1.0, 1.0, 1.0)
+                }
+            }
+            Collision::Right => {
+                if self.direction.x > 0.0 {
+                    self.direction *= Vec3::new(-1.0, 1.0, 1.0)
+                }
+            }
+            Collision::Top => {
+                if self.direction.y > 0.0 {
+                    self.direction *= Vec3::new(1.0, -1.0, 1.0)
+                }
+            }
+            Collision::Bottom => {
+                if self.direction.y < 0.0 {
+                    self.direction *= Vec3::new(1.0, -1.0, 1.0)
+                }
+            }
         }
     }
 }
@@ -54,10 +72,10 @@ pub fn ball_collision(
     for (mut ball, ball_transform, ball_sprite) in ball_query.iter_mut() {
         for (_collider, collider_transform, collider_sprite) in colliders_query.iter() {
             if let Some(collision) = collide(
-                ball_transform.translation,
-                ball_sprite.size,
                 collider_transform.translation,
                 collider_sprite.size,
+                ball_transform.translation,
+                ball_sprite.size,
             ) {
                 ball.collide(collision)
             };
