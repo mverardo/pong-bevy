@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 use bevy::prelude::Vec3;
 use rand::{distributions::Standard, prelude::Distribution, Rng};
 
@@ -44,14 +42,4 @@ impl Distribution<Direction> for Standard {
             _ => panic!("Random out of range 0..7"),
         }
     }
-}
-
-#[cfg(test)]
-mod tests {
-    use bevy::math::Vec3;
-
-    use super::{Direction, TryFrom};
-
-    #[test]
-    fn from_vec3() {}
 }
