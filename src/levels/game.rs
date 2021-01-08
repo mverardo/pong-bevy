@@ -6,6 +6,7 @@ use bevy::{
     },
     sprite::Sprite,
 };
+use ncollide2d::{na::Vector2, shape::Cuboid};
 
 use crate::ball::*;
 use crate::collider::*;
@@ -20,8 +21,7 @@ pub fn game_level(commands: &mut Commands, mut materials: ResMut<Assets<ColorMat
     let paddle_width = 20.0;
     let paddle_height = 100.0;
 
-    let ball_width = 20.0;
-    let ball_height = 20.0;
+    let ball = Ball::new();
 
     commands
         .spawn(Camera2dBundle::default())
@@ -58,6 +58,7 @@ pub fn game_level(commands: &mut Commands, mut materials: ResMut<Assets<ColorMat
                 move_up: KeyCode::W,
                 move_down: KeyCode::S,
             },
+            collider_shape: Cuboid::new(Vector2::new(paddle_width / 2.0, paddle_height / 2.0)),
             speed: 300.0,
         })
         //Player 2
@@ -78,14 +79,15 @@ pub fn game_level(commands: &mut Commands, mut materials: ResMut<Assets<ColorMat
                 move_up: KeyCode::Up,
                 move_down: KeyCode::Down,
             },
+            collider_shape: Cuboid::new(Vector2::new(paddle_width / 2.0, paddle_height / 2.0)),
             speed: 300.0,
         })
         //Ball
         .spawn(SpriteBundle {
             material: materials.add(Color::rgb(0.2, 0.2, 0.2).into()),
             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-            sprite: Sprite::new(Vec2::new(ball_width, ball_height)),
+            sprite: Sprite::new(Vec2::new(ball.size.x, ball.size.y)),
             ..Default::default()
         })
-        .with(Ball::new());
+        .with(ball);
 }

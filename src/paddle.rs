@@ -5,12 +5,14 @@ use bevy::{
     prelude::Transform,
     prelude::{KeyCode, Vec3},
 };
+use ncollide2d::shape::Cuboid;
 
 use crate::direction::*;
 use crate::player::*;
 pub struct Paddle {
     pub player: Player,
     pub speed: f32,
+    pub collider_shape: Cuboid<f32>, //TODO: Extract to component
 }
 
 pub fn paddle_movement(
