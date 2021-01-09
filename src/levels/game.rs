@@ -14,10 +14,10 @@ use crate::player::*;
 
 pub fn game_level(commands: &mut Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
     let wall_material = materials.add(Color::rgb(0.5, 0.5, 0.5).into());
-    let wall_thickness = 10.0;
+    let wall_thickness = 30.0;
     let bounds = Vec2::new(900.0, 600.0);
 
-    let paddle_width = 20.0;
+    let paddle_width = 30.0;
     let paddle_height = 100.0;
 
     let ball_width = 20.0;
@@ -34,7 +34,7 @@ pub fn game_level(commands: &mut Commands, mut materials: ResMut<Assets<ColorMat
             sprite: Sprite::new(Vec2::new(bounds.x + wall_thickness, wall_thickness)),
             ..Default::default()
         })
-        .with(Collider)
+        .with(WallCollider)
         //bottom
         .spawn(SpriteBundle {
             material: wall_material,
@@ -42,7 +42,7 @@ pub fn game_level(commands: &mut Commands, mut materials: ResMut<Assets<ColorMat
             sprite: Sprite::new(Vec2::new(bounds.x + wall_thickness, wall_thickness)),
             ..Default::default()
         })
-        .with(Collider)
+        .with(WallCollider)
         // Paddles
         // Player 1
         .spawn(SpriteBundle {
@@ -51,14 +51,14 @@ pub fn game_level(commands: &mut Commands, mut materials: ResMut<Assets<ColorMat
             sprite: Sprite::new(Vec2::new(paddle_width, paddle_height)),
             ..Default::default()
         })
-        .with(Collider)
+        .with(PaddleCollider)
         .with(Paddle {
             player: Player {
                 code: PlayerCode::One,
                 move_up: KeyCode::W,
                 move_down: KeyCode::S,
             },
-            speed: 300.0,
+            speed: 600.0,
         })
         //Player 2
         .spawn(SpriteBundle {
@@ -71,14 +71,14 @@ pub fn game_level(commands: &mut Commands, mut materials: ResMut<Assets<ColorMat
             sprite: Sprite::new(Vec2::new(paddle_width, paddle_height)),
             ..Default::default()
         })
-        .with(Collider)
+        .with(PaddleCollider)
         .with(Paddle {
             player: Player {
                 code: PlayerCode::Two,
                 move_up: KeyCode::Up,
                 move_down: KeyCode::Down,
             },
-            speed: 300.0,
+            speed: 600.0,
         })
         //Ball
         .spawn(SpriteBundle {

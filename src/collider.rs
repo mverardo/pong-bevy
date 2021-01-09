@@ -1,1 +1,3 @@
-pub struct Collider;
+pub struct PaddleCollider;
+
+pub struct WallCollider;

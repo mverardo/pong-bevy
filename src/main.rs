@@ -19,7 +19,8 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_startup_system(game_level.system())
         .add_system(ball_movement.system())
-        .add_system(ball_collision.system())
+        .add_system(ball_paddle_collision.system())
+        .add_system(ball_wall_collision.system())
         .add_system(paddle_movement.system())
         .run();
 }
